@@ -2,27 +2,7 @@
 <div class="hero hero-normal">
     <div class="container">
         <div class="row">
-            {{! <div class="col-lg-3">
-                <div class="hero__categories">
-                    <div class="hero__categories__all">
-                        <i class="fa fa-bars"></i>
-                        <span>All departments</span>
-                    </div>
-                    <ul>
-                        <li><a href="#">Fresh Meat</a></li>
-                        <li><a href="#">Vegetables</a></li>
-                        <li><a href="#">Fruit & Nut Gifts</a></li>
-                        <li><a href="#">Fresh Berries</a></li>
-                        <li><a href="#">Ocean Foods</a></li>
-                        <li><a href="#">Butter & Eggs</a></li>
-                        <li><a href="#">Fastfood</a></li>
-                        <li><a href="#">Fresh Onion</a></li>
-                        <li><a href="#">Papayaya & Crisps</a></li>
-                        <li><a href="#">Oatmeal</a></li>
-                        <li><a href="#">Fresh Bananas</a></li>
-                    </ul>
-                </div>
-            </div> }}
+            
             <div class="col-lg-9">
 
                 <div class="hero__search">
@@ -79,7 +59,7 @@
                         <h4>Category</h4>
                         <ul>
                             {{#each listCategory}}
-                            <li><a href="/shop/product_category/{{this.category_Id}}/page/1">{{this.name}}</a>
+                            <li><a href="" class="currentCategory" onclick="load_product_page(1, {{category_Id}})">{{this.name}}</a>
                             </li>
                             {{/each}}
                         </ul>
@@ -104,72 +84,7 @@
                             </div>
                         </div>
                     </div>
-                    {{! <div class="sidebar__item sidebar__item__color--option">
-                        <h4>Colors</h4>
-                        <div class="sidebar__item__color sidebar__item__color--white">
-                            <label for="white">
-                                White
-                                <input type="radio" id="white">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__color sidebar__item__color--gray">
-                            <label for="gray">
-                                Gray
-                                <input type="radio" id="gray">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__color sidebar__item__color--red">
-                            <label for="red">
-                                Red
-                                <input type="radio" id="red">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__color sidebar__item__color--black">
-                            <label for="black">
-                                Black
-                                <input type="radio" id="black">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__color sidebar__item__color--blue">
-                            <label for="blue">
-                                Blue
-                                <input type="radio" id="blue">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__color sidebar__item__color--green">
-                            <label for="green">
-                                Green
-                                <input type="radio" id="green">
-                            </label>
-                        </div>
-                    </div> }}
-                    {{! <div class="sidebar__item">
-                        <h4>Popular Size</h4>
-                        <div class="sidebar__item__size">
-                            <label for="large">
-                                Large
-                                <input type="radio" id="large">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__size">
-                            <label for="medium">
-                                Medium
-                                <input type="radio" id="medium">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__size">
-                            <label for="small">
-                                Small
-                                <input type="radio" id="small">
-                            </label>
-                        </div>
-                        <div class="sidebar__item__size">
-                            <label for="tiny">
-                                Tiny
-                                <input type="radio" id="tiny">
-                            </label>
-                        </div>
-                    </div> }}
+                    
                     <div class="sidebar__item">
                         <div class="latest-product__text">
                             <h4>Latest Products</h4>
@@ -354,8 +269,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    {{#each listProducts}}
+                <div class="row" id="list_product_shop">
+                    {{#each listProducts.data}}
                     <div class="col-lg-4 col-md-6 col-sm-6">
                         <div class="product__item">
                             <div class="product__item__pic">
@@ -375,18 +290,98 @@
                     </div>
                     {{/each}}
                 </div>
-                <div class="d-flex justify-content-center product__pagination">
-                    {{#each listLeftPage}}
-                    <a href="/shop{{../url_link}}/page/{{this}}{{../url_sort}}{{../url_filter}}">{{this}}</a>
-                    {{/each}}
+                <p id="total_page" style="display: none;">{{listProducts.total_page}}</p>
+                <div id="page_component" class="d-flex justify-content-center product__pagination">
+                    
+                    {{!-- <a href="/shop{{url_link}}/page/{{listcurrentPage}}{{url_sort}}{{url_filter}}"
+                        class="currentPage">{{listcurrentPage}}</a> --}}
 
-                    <a href="/shop{{url_link}}/page/{{listcurrentPage}}{{url_sort}}{{url_filter}}"
-                        class="currentPage">{{listcurrentPage}}</a>
-
-                    {{#each listRightPage}}
-                    <a href="/shop{{../url_link}}/page/{{this}}{{../url_sort}}{{../url_filter}}">{{this}}</a>
-                    {{/each}}
                 </div>
+                <script>
+                    let total_page= document.getElementById("total_page").innerText
+                    let pageComponent = document.getElementById("page_component")
+                    
+
+
+                    let list_product= document.getElementById("list_product_shop")
+                    let preCateID;
+                    function load_product_page(page=1, cate_id){
+                        let htmlListProduct=``
+                        $.getJSON(`/api/shop?page=${page}&cate_id=${cate_id||''}`, function (products) {
+                            const data= products.data.map(v=>{
+                                return `
+                                    <div class="col-lg-4 col-md-6 col-sm-6">
+                                        <div class="product__item">
+                                            <div class="product__item__pic">
+                                                <a href="/detail/${v.product_Id}">
+                                                    <img src="${v.image}" alt="image" />
+                                                </a>
+                                                <ul class="product__item__pic__hover">
+                                                    <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="product__item__text">
+                                                <h6><a href="/detail/${v.product_Id}">${v.name}</a></h6>
+                                                <h5><a class="product__item__price"
+                                                        href="/detail/${v.product_Id}">${v.price}</a></h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            })
+                            htmlListProduct= data.join("")
+                            list_product.innerHTML= htmlListProduct
+
+                            if (cate_id){
+                                if (preCateID!=cate_id)
+                                    renderPage(products.total_page, cate_id)
+                                preCateID= cate_id;
+                            }
+                        });
+                    }
+
+                    function renderPage(total_page, cate_id){
+                        let pagingHtml= ``
+                        for (let i=1; i<Number(total_page); i++){
+                            pagingHtml+= `
+                                <a href=""
+                            class="currentPage" onclick="load_product_page(${i}, ${cate_id})">${i}</a>
+                            `
+                        }
+                        pageComponent.innerHTML= pagingHtml
+                        activePage()
+                    }
+                    renderPage(total_page)
+
+
+                    function activePage(){
+                        let pages= document.getElementsByClassName("currentPage")
+                        let prePage= pages[0];
+                        prePage.classList.add("is_acctive")
+                        for (let page of pages){
+                            page.addEventListener('click', (e)=>{
+                                e.preventDefault()
+                                e.target.classList.add("is_acctive")
+                                prePage.classList.remove("is_acctive")
+                                prePage= page
+                            })
+                        }
+                    }
+                    {{!-- activePage() --}}
+
+
+                    let categories= document.getElementsByClassName("currentCategory")
+                    let preCate= categories[0];
+                    preCate.classList.add("is_acctive")
+                    for (let cate of categories){
+                        cate.addEventListener('click', (e)=>{
+                            e.preventDefault()
+                            e.target.classList.add("is_acctive")
+                            preCate.classList.remove("is_acctive")
+                            preCate= cate
+                        })
+                    }
+                </script>
             </div>
         </div>
     </div>
