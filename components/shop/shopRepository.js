@@ -46,30 +46,30 @@ exports.getAllCategory = async () => {
     return result[0];
 }
 
-exports.getSortedProductByPrice_ASC = async (page,cate_Id,nameFilter) => {
+exports.getSortedProductByPrice_ASC = async (page, cate_Id, nameFilter) => {
     //let count = this.countAllProducts();
     //const result = await db.connection.execute('select * from Product order by price where category_Id=?',[cate_Id]);
-    const data=[] ;
-    let count=0;
-    if(cate_Id!==0 && nameFilter===""){
-        count = await db.connection.execute(`select count(*) from Product where category_Id=?`,[cate_Id]);
-        data = await db.connection.execute(`select * from Product where category_Id=? limit ${ITEM_PER_PAGE} offset ${(page-1)*ITEM_PER_PAGE} order by price `,[cate_Id]);
-    }
-        
-    else if (cate_Id===0 && nameFilter!==""){
-        count = await db.connection.execute(`select count(*) FROM product WHERE name LIKE ?`, [`%${nameFilter}%`]);
-        data = await db.connection.execute(`SELECT * FROM product WHERE name LIKE ? limit ${ITEM_PER_PAGE} offset ${(page-1)*ITEM_PER_PAGE} order by price`, [`%${nameFilter}%`]);
-    }
-    else 
-        count = await db.connection.execute(`select count(*) FROM product WHERE name LIKE ? and category_Id=?`, [`%${nameFilter}%`], [cate_Id]);
-        data = await db.connection.execute(`SELECT * FROM product WHERE name LIKE ? and category_Id=? limit ${ITEM_PER_PAGE} offset ${(page-1)*ITEM_PER_PAGE} order by price`, [`%${nameFilter}%`], [cate_Id]);
-    
+    let sqlCount= "select count(*) from Product"
+    let sqlData = "select * from Product"
+    let data;
+    let count;
+    console.log("name repo: ", nameFilter);
+    console.log("cate repo: ", cate_Id);
+    console.log("SQL: ", `${sqlData} ${nameFilter?"where name LIKE '%"+nameFilter+"%' ":""} ${cate_Id? nameFilter&&"and"+" category_Id="+cate_Id: ""} order by price  limit ${ITEM_PER_PAGE} offset ${(Number(page)-1)*ITEM_PER_PAGE}`);
+    count = await db.connection.execute(`${sqlCount} ${nameFilter?"where name LIKE '%"+nameFilter+"%' ":""} ${cate_Id? nameFilter&&"and"+" category_Id="+cate_Id:""}`);    
+    data = await db.connection.execute(`${sqlData} ${nameFilter?"where name LIKE '%"+nameFilter+"%' ":""} ${cate_Id? nameFilter&&"and"+" category_Id="+cate_Id: ""} order by price  limit ${ITEM_PER_PAGE} offset ${(Number(page)-1)*ITEM_PER_PAGE}`);    
+    count=count[0][0]['count(*)']
     const result={
         data: data[0],
         page: page,
         total_page: Math.ceil(count/+ITEM_PER_PAGE),
         item_per_page: ITEM_PER_PAGE
     }
+    console.log({
+        page: page,
+        total_page: Math.ceil(count/+ITEM_PER_PAGE),
+        item_per_page: ITEM_PER_PAGE
+    });
 
     return result;
     
@@ -151,7 +151,7 @@ exports.getSortedProductByRate_Star_DESC = async (page,cate_Id,nameFilter) => {
     }
     else 
         count = await db.connection.execute(`select count(*) FROM product WHERE name LIKE ? and category_Id=?`, [`%${nameFilter}%`], [cate_Id]);
-        data = await db.connection.execute(`SELECT * FROM product WHERE name LIKE ? and category_Id=? limit ${ITEM_PER_PAGE} offset ${(page-1)*ITEM_PER_PAGE} order by rate_star DESC`, [`%${nameFilter}%`], [cate_Id]);
+        data = await db.connection.execute(`SELECT * FROM product WHERE name LIKE ? and category_Id=? limit ${ITEM_PER_PAGE} offset ${(Number(page)-1)*ITEM_PER_PAGE} order by rate_star DESC`, [`%${nameFilter}%`], [cate_Id]);
     
     const result={
         data: data[0],
@@ -168,9 +168,9 @@ exports.getSortedProductByRate_Star_DESC = async (page,cate_Id,nameFilter) => {
 //     return result[0];
 // }
 
-exports.filter = async (page,nameFilter) => {
+exports.filter = async (page=1,nameFilter) => {
     let count = await db.connection.execute(`select count(*) FROM product WHERE name LIKE ?`, [`%${nameFilter}%`]);
-    const data = await db.connection.execute(`SELECT * FROM product WHERE name LIKE ? limit ${ITEM_PER_PAGE} offset ${(page-1)*ITEM_PER_PAGE}`, [`%${nameFilter}%`]);
+    const data = await db.connection.execute(`SELECT * FROM product WHERE name LIKE ? limit ${ITEM_PER_PAGE} offset ${(Number(page)-1)*ITEM_PER_PAGE}`, [`%${nameFilter}%`]);
     count= count[0][0]['count(*)']
     const result={
         data: data[0],

@@ -32,7 +32,7 @@ exports.getSortedProductByRate_Star_DESC = async (page,cate_Id,nameFilter) => {
     return shopRepository.getSortedProductByRate_Star_DESC(page,cate_Id,nameFilter)
 }
 
-exports.filter = async (page,nameFilter) => {
+exports.filter = async (page=1,nameFilter) => {
     return shopRepository.filter(page,nameFilter)
 }
 

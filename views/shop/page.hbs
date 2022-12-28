@@ -7,9 +7,9 @@
 
                 <div class="hero__search">
                     <div class="hero__search__form">
-                        <form action="/shop/page/1{{url_filter}}" class="form__search">
-                            <input type="text" name="name" placeholder="What do you need?" />
-                            <button type="submit" class="site-btn">SEARCH</button>
+                        <form class="form__search" onsubmit="return false">
+                            <input type="text" id="name_search" name="name" placeholder="What do you need?" />
+                            <button  id="btn_submit_search" class="site-btn">SEARCH</button>
                         </form>
                     </div>
                 </div>
@@ -80,7 +80,7 @@
                                 </div>
                             </div>
                             <div class="mt-2">
-                                <button id="btn-search-slider" class="btn btn-success btn-block">Apply</button>
+                                <button id="btn-search-slider-price" class="btn btn-success btn-block">Apply</button>
                             </div>
                         </div>
                     </div>
@@ -232,23 +232,21 @@
                                     <span class="sort-item">Sort by</span>
                                     <ul class="sort-by">
                                         <li>
-                                            <a href="{{originalUrl}}{{url_filter}}" class="sort-item">
+                                            <a href="" class="sort-item">
                                                 Default
                                             </a>
                                         </li>
-                                        <li><a href="{{originalUrl}}sort/price-asc{{url_filter}}"
-                                                class="sort-item">Price:
+                                        <li><a href="" id="price-asc" class="sort-item">Price:
                                                 <span class="font-weight-bold">Ascending</span></a></li>
-                                        <li><a href="{{originalUrl}}sort/price-desc{{url_filter}}"
-                                                class="sort-item">Price:
+                                        <li><a href="" id="price-desc" class="sort-item">Price:
                                                 <span class="font-weight-bold">Descending</span></a></li>
-                                        <li><a href="{{originalUrl}}sort/rate-star-asc{{url_filter}}"
-                                                class="sort-item">Rate Star:
+                                        <li><a href="" id="star-asc" class="sort-item">Rate Star:
                                                 <span class="font-weight-bold">Ascending</span>
-                                            </a></li>
-                                        <li><a href="{{originalUrl}}sort/rate-star-desc{{url_filter}}"
-                                                class="sort-item">Rate Star:
-                                                <span class="font-weight-bold">Descending</span></a></li>
+                                            </a>
+                                        </li>
+                                        <li><a href="" id="star-desc" class="sort-item">Rate Star:
+                                                <span class="font-weight-bold">Descending</span></a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -304,10 +302,14 @@
 
 
                     let list_product= document.getElementById("list_product_shop")
-                    let preCateID;
-                    function load_product_page(page=1, cate_id){
+                    let preCateID=0;
+                    let preNameSearch='';
+                    let preSort='';
+                    function load_product_page(page=1, cate_id=preCateID, name=preNameSearch, sort=preSort){
+                        console.log(page, cate_id, typeof name)
+                        
                         let htmlListProduct=``
-                        $.getJSON(`/api/shop?page=${page}&cate_id=${cate_id||''}`, function (products) {
+                        $.getJSON(`/api/shop?page=${page}&cate_id=${cate_id||''}&name=${name||''}&sort=${sort||''}`, function (products) {
                             const data= products.data.map(v=>{
                                 return `
                                     <div class="col-lg-4 col-md-6 col-sm-6">
@@ -333,19 +335,77 @@
                             list_product.innerHTML= htmlListProduct
 
                             if (cate_id){
-                                if (preCateID!=cate_id)
-                                    renderPage(products.total_page, cate_id)
-                                preCateID= cate_id;
+                                if (preCateID!==cate_id){
+                                    renderPage(products.total_page, cate_id, name, sort)
+                                    preCateID= cate_id;
+                                }  
+                                
+                            }
+                            if (name){
+                                if (name!==preNameSearch){
+                                    renderPage(products.total_page, 0, name, sort)
+                                }
+                                    preNameSearch= name;
+                                
+                            }
+                            if (sort){
+                                if (sort!==preSort){
+                                    renderPage(products.total_page, 0, name, sort)
+                                    preSort= sort;
+                                }
+                                
                             }
                         });
                     }
 
-                    function renderPage(total_page, cate_id){
+                    //handle form search
+                    let btn_submit_search= document.getElementById("btn_submit_search")
+                    let name_search= document.getElementById("name_search")
+                    btn_submit_search.addEventListener("click", ()=>{
+                        let name= name_search.value
+                        
+                        load_product_page(1,0,name)
+                    })
+                    
+
+                    //handle price 
+                    let btn_search_slider = document.getElementById("btn-search-slider-price")
+                    btn_search_slider.addEventListener("click", ()=>{
+                        let minamount= document.getElementById("minamount")
+                        let maxamount= document.getElementById("maxamount")
+                        console.log(minamount, maxamount)
+                    }) 
+
+                    //handle sort
+                    let price_asc = document.getElementById("price-asc")
+                    let price_desc = document.getElementById("price-desc")
+                    let star_asc = document.getElementById("star-asc")
+                    let star_desc = document.getElementById("star-desc")
+
+                    price_asc.addEventListener('click', (e)=>{
+                        e.preventDefault()
+                        load_product_page(1, preCateID, preNameSearch, 'price-asc')
+                    })
+                    price_desc.addEventListener('click', (e)=>{
+                        e.preventDefault()
+                        load_product_page(1, preCateID, preNameSearch, 'price-desc')
+                    })
+                    star_asc.addEventListener('click', (e)=>{
+                        e.preventDefault()
+                        load_product_page(1, preCateID, preNameSearch, 'rate-star-asc')
+                    })
+                    star_desc.addEventListener('click', (e)=>{
+                        e.preventDefault()
+                        load_product_page(1, preCateID, preNameSearch, 'rate-star-desc')
+                    })
+
+
+                    function renderPage(total_page=1, cate_id=0, name, sort){
                         let pagingHtml= ``
                         for (let i=1; i<Number(total_page); i++){
                             pagingHtml+= `
                                 <a href=""
-                            class="currentPage" onclick="load_product_page(${i}, ${cate_id})">${i}</a>
+                            class="currentPage" onclick="load_product_page(${i}, ${cate_id}, '${name||''}', '${sort||''}')">${i}</a>
                             `
                         }
                         pageComponent.innerHTML= pagingHtml

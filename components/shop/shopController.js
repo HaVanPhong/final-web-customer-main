@@ -129,19 +129,16 @@ exports.category = async (req, res) => {
 }
 
 exports.getApiProducts = async (req, res) => {
-  const filter = req.params.filter;
-  const { name: nameFilter } = req.query;
+  // const filter = req.params.filter
+  const { name: nameFilter, sort: filter } = req.query;
+  console.log("Query: ", req.query);
   let currentPage = req.query.page ||1;
   let cate_id= req.query.cate_id;
-  let url_filter = "";
-  let url_sort = "";
+  console.log("cate id in control: ", cate_id);
 
   currentPage=Number(currentPage);
   //kt nếu có số page
-  if (nameFilter) {
-    url_filter = "?name=" + nameFilter;
-  }
-  if (filter) url_sort = "/sort/" + filter;
+
   let result;
   let listProducts;
   if (!nameFilter && !filter && !cate_id) {
@@ -153,29 +150,20 @@ exports.getApiProducts = async (req, res) => {
     listProducts= result
   }
   if (nameFilter) {
-    listProducts = await shopService.filter(nameFilter);
-    console.log("listProducts Filter", listProducts);
+    listProducts = await shopService.filter(currentPage, nameFilter);
+    // console.log("listProducts Filter", listProducts);
   }
   if (filter === "price-asc") {
-    if (listProducts.data.length === 0)
-      listProducts = await shopService.getSortedProductByPrice_ASC();
-    else listProducts.data.sort((a, b) => a.price - b.price);
-    console.log("haha");
+    listProducts = await shopService.getSortedProductByPrice_ASC(currentPage, cate_id, nameFilter);
   }
   else if (filter === "price-desc") {
-    if (listProducts.data.length === 0)
-      listProducts = await shopService.getSortedProductByPrice_DESC();
-    else listProducts.data.sort((a, b) => b.price - a.price);
+      listProducts = await shopService.getSortedProductByPrice_DESC(currentPage, cate_id, nameFilter);
   }
   else if (filter === "rate-star-asc") {
-    if (listProducts.data.length === 0)
-      listProducts = await shopService.getSortedProductByRate_Star_ASC();
-    else listProducts.data.sort((a, b) => a.rate_star - b.rate_star);
+      listProducts = await shopService.getSortedProductByRate_Star_ASC(currentPage, cate_id, nameFilter);
   }
   else if (filter === "rate-star-desc") {
-    if (listProducts.data.length === 0)
-      listProducts = await shopService.getSortedProductByRate_Star_DESC();
-    else listProducts.data.sort((a, b) => b.rate_star - a.rate_star);
+      listProducts = await shopService.getSortedProductByRate_Star_DESC(currentPage, cate_id, nameFilter);
   }
   for (let i = 0; i < listProducts.data.length; i++) {
     listProducts.data[i].price = listProducts.data[i].price.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
