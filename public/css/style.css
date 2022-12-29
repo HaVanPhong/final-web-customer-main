@@ -1140,7 +1140,7 @@ ol {
     position: absolute;
     left: 38px;
     top: 13px;
-    height: 1px;
+    height: 2px;
     width: 5px;
     background: #dd2222;
     content: "";
@@ -3816,4 +3816,24 @@ li {
 
 .is_acctive{
     background: #7fad39;
+}
+
+.wrapper-button{
+    margin-left: 500px;
+}
+
+#minamounth {
+    margin-bottom: 30px ; 
+    font-size: 1.3rem;
+    border: 2px solid #28a745;
+    
+}
+#maxamounth {
+    margin-bottom: 30px ; 
+    font-size: 1.3rem;
+    border: 2px solid #28a745;
+}
+
+input::placeholder {
+    color: grey;
 }
