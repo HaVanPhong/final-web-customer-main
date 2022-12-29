@@ -130,41 +130,35 @@ exports.category = async (req, res) => {
 
 exports.getApiProducts = async (req, res) => {
   // const filter = req.params.filter
-  const { name: nameFilter, sort: filter } = req.query;
+  const { name: nameFilter, sort: filter, cate_id: cate_id, min: min, max: max } = req.query;
   console.log("Query: ", req.query);
   let currentPage = req.query.page ||1;
-  let cate_id= req.query.cate_id;
-  console.log("cate id in control: ", cate_id);
 
   currentPage=Number(currentPage);
   //kt nếu có số page
 
-  let result;
   let listProducts;
-  if (!nameFilter && !filter && !cate_id) {
-    result = await shopService.getAllProduct(currentPage);
-    listProducts= result
+  if (!nameFilter && !filter && !cate_id && !min && !max) {
+    listProducts = await shopService.getAllProduct(currentPage);
+    return res.json(listProducts);
   }
-  if (cate_id){
-    result = await shopService.getProductByCategory(currentPage, cate_id);
-    listProducts= result
-  }
-  if (nameFilter) {
-    listProducts = await shopService.filter(currentPage, nameFilter);
-    // console.log("listProducts Filter", listProducts);
-  }
+  
   if (filter === "price-asc") {
-    listProducts = await shopService.getSortedProductByPrice_ASC(currentPage, cate_id, nameFilter);
+    listProducts = await shopService.getSortedProductByPrice_ASC(currentPage, cate_id, nameFilter, min, max);
   }
   else if (filter === "price-desc") {
-      listProducts = await shopService.getSortedProductByPrice_DESC(currentPage, cate_id, nameFilter);
+      listProducts = await shopService.getSortedProductByPrice_DESC(currentPage, cate_id, nameFilter, min, max);
   }
   else if (filter === "rate-star-asc") {
-      listProducts = await shopService.getSortedProductByRate_Star_ASC(currentPage, cate_id, nameFilter);
+      listProducts = await shopService.getSortedProductByRate_Star_ASC(currentPage, cate_id, nameFilter, min, max);
   }
   else if (filter === "rate-star-desc") {
-      listProducts = await shopService.getSortedProductByRate_Star_DESC(currentPage, cate_id, nameFilter);
+      listProducts = await shopService.getSortedProductByRate_Star_DESC(currentPage, cate_id, nameFilter, min, max);
+  }else {
+    listProducts = await shopService.filter(currentPage, cate_id, nameFilter, min, max);
   }
+
+
   for (let i = 0; i < listProducts.data.length; i++) {
     listProducts.data[i].price = listProducts.data[i].price.toLocaleString('it-IT', { style: 'currency', currency: 'VND' });
   }

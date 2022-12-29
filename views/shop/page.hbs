@@ -67,17 +67,10 @@
                     <div class="sidebar__item">
                         <h4>Price</h4>
                         <div class="price-range-wrap">
-                            <div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content"
-                                data-min="10" data-max="540">
-                                <div class="ui-slider-range ui-corner-all ui-widget-header"></div>
-                                <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
-                                <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
-                            </div>
-                            <div class="range-slider">
-                                <div class="price-input">
-                                    <input type="text" id="minamount" />
-                                    <input type="text" id="maxamount" />
-                                </div>
+                             <div class="range-slider">
+                                
+                                    <input type="number" id="minamounth" name="name" placeholder="Min" />
+                                    <input type="number" id="maxamounth" name="name" placeholder="Max" />
                             </div>
                             <div class="mt-2">
                                 <button id="btn-search-slider-price" class="btn btn-success btn-block">Apply</button>
@@ -231,11 +224,6 @@
                                 <div class="sort-list">
                                     <span class="sort-item">Sort by</span>
                                     <ul class="sort-by">
-                                        <li>
-                                            <a href="" class="sort-item">
-                                                Default
-                                            </a>
-                                        </li>
                                         <li><a href="" id="price-asc" class="sort-item">Price:
                                                 <span class="font-weight-bold">Ascending</span></a></li>
                                         <li><a href="" id="price-desc" class="sort-item">Price:
@@ -305,11 +293,13 @@
                     let preCateID=0;
                     let preNameSearch='';
                     let preSort='';
-                    function load_product_page(page=1, cate_id=preCateID, name=preNameSearch, sort=preSort){
+                    let preMin=0;
+                    let preMax=0;
+                    function load_product_page(page=1, cate_id=preCateID, name=preNameSearch, sort=preSort, min=preMin, max=preMax){
                         console.log(page, cate_id, typeof name)
                         
                         let htmlListProduct=``
-                        $.getJSON(`/api/shop?page=${page}&cate_id=${cate_id||''}&name=${name||''}&sort=${sort||''}`, function (products) {
+                        $.getJSON(`/api/shop?page=${page}&cate_id=${cate_id||''}&name=${name||''}&sort=${sort||''}&min=${min||''}&max=${max||''}`, function (products) {
                             const data= products.data.map(v=>{
                                 return `
                                     <div class="col-lg-4 col-md-6 col-sm-6">
@@ -343,17 +333,28 @@
                             }
                             if (name){
                                 if (name!==preNameSearch){
-                                    renderPage(products.total_page, 0, name, sort)
+                                    renderPage(products.total_page, cate_id, name, sort)
                                 }
                                     preNameSearch= name;
                                 
                             }
                             if (sort){
                                 if (sort!==preSort){
-                                    renderPage(products.total_page, 0, name, sort)
+                                    renderPage(products.total_page, cate_id, name, sort)
                                     preSort= sort;
                                 }
                                 
+                            }
+
+                            if (min){
+                                if (max!=preMax){
+                                    renderPage(products.total_page, cate_id, name, sort, min, max)
+                                    preMax= max;
+                                }
+                                if (min!=preMin){
+                                    renderPage(products.total_page, cate_id, name, sort, min, max)
+                                    preMin= min;
+                                }
                             }
                         });
                     }
@@ -364,16 +365,21 @@
                     btn_submit_search.addEventListener("click", ()=>{
                         let name= name_search.value
                         
-                        load_product_page(1,0,name)
+                        load_product_page(1, preCateID, name, preSort, preMin, preMax)
                     })
                     
-
                     //handle price 
                     let btn_search_slider = document.getElementById("btn-search-slider-price")
+                    let minamount= document.getElementById("minamounth")
+                    let maxamount= document.getElementById("maxamounth")
                     btn_search_slider.addEventListener("click", ()=>{
-                        let minamount= document.getElementById("minamount")
-                        let maxamount= document.getElementById("maxamount")
-                        console.log(minamount, maxamount)
+                        let min = minamount.value || 0
+                        let max = maxamount.value || 0
+                        if (max>min){
+                            load_product_page(1, preCateID, preNameSearch, preSort, min, max)
+                        }else {
+                            alert("Invalid price")
+                        }                        
                     }) 
 
                     //handle sort
@@ -382,30 +388,32 @@
                     let star_asc = document.getElementById("star-asc")
                     let star_desc = document.getElementById("star-desc")
 
+                    
+
                     price_asc.addEventListener('click', (e)=>{
                         e.preventDefault()
-                        load_product_page(1, preCateID, preNameSearch, 'price-asc')
+                        load_product_page(1, preCateID, preNameSearch, 'price-asc', preMin, preMax)
                     })
                     price_desc.addEventListener('click', (e)=>{
                         e.preventDefault()
-                        load_product_page(1, preCateID, preNameSearch, 'price-desc')
+                        load_product_page(1, preCateID, preNameSearch, 'price-desc', preMin, preMax)
                     })
                     star_asc.addEventListener('click', (e)=>{
                         e.preventDefault()
-                        load_product_page(1, preCateID, preNameSearch, 'rate-star-asc')
+                        load_product_page(1, preCateID, preNameSearch, 'rate-star-asc', preMin, preMax)
                     })
                     star_desc.addEventListener('click', (e)=>{
                         e.preventDefault()
-                        load_product_page(1, preCateID, preNameSearch, 'rate-star-desc')
+                        load_product_page(1, preCateID, preNameSearch, 'rate-star-desc', preMin, preMax)
                     })
 
 
-                    function renderPage(total_page=1, cate_id=0, name, sort){
+                    function renderPage(total_page=1, cate_id=0, name, sort, min, max){
                         let pagingHtml= ``
-                        for (let i=1; i<Number(total_page); i++){
+                        for (let i=1; i<= Number(total_page); i++){
                             pagingHtml+= `
                                 <a href=""
-                            class="currentPage" onclick="load_product_page(${i}, ${cate_id}, '${name||''}', '${sort||''}')">${i}</a>
+                            class="currentPage" onclick="load_product_page(${i}, ${cate_id}, '${name||''}', '${sort||''}', ${min}, ${max})">${i}</a>
                             `
                         }
                         pageComponent.innerHTML= pagingHtml
