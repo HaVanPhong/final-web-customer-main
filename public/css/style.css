@@ -3833,3 +3833,7 @@ li {
 input::placeholder {
     color: grey;
 }
+
+.inputs{
+    width: 50px;
+}

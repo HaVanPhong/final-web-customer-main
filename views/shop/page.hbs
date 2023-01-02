@@ -264,7 +264,11 @@
                                     <img src="{{this.image}}" alt="image" />
                                 </a>
                                 <ul class="product__item__pic__hover">
-                                    <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                    <li>
+                                        <a onclick="addToCart({{this.product_Id}})">
+                                            <i class="fa fa-shopping-cart"></i>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="product__item__text">
@@ -295,9 +299,8 @@
                     let preSort='';
                     let preMin=0;
                     let preMax=0;
-                    function load_product_page(page=1, cate_id=preCateID, name=preNameSearch, sort=preSort, min=preMin, max=preMax){
-                        console.log(page, cate_id, typeof name)
-                        
+
+                    function load_product_page(page=1, cate_id=preCateID, name=preNameSearch, sort=preSort, min=preMin, max=preMax){                        
                         let htmlListProduct=``
                         $.getJSON(`/api/shop?page=${page}&cate_id=${cate_id||''}&name=${name||''}&sort=${sort||''}&min=${min||''}&max=${max||''}`, function (products) {
                             const data= products.data.map(v=>{
@@ -309,7 +312,11 @@
                                                     <img src="${v.image}" alt="image" />
                                                 </a>
                                                 <ul class="product__item__pic__hover">
-                                                    <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                                    <li>
+                                                        <a onclick="addToCart(${v.product_Id})">
+                                                            <i class="fa fa-shopping-cart"></i>
+                                                        </a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                             <div class="product__item__text">
@@ -439,14 +446,29 @@
 
 
                     let categories= document.getElementsByClassName("currentCategory")
-                    let preCate= categories[0];
+                    let preCate;//= categories[0];
                     {{!-- preCate.classList.add("is_acctive") --}}
                     for (let cate of categories){
                         cate.addEventListener('click', (e)=>{
                             e.preventDefault()
                             e.target.classList.add("is_acctive")
-                            preCate.classList.remove("is_acctive")
+                            if (preCate){
+                                preCate.classList.remove("is_acctive") 
+                            }
                             preCate= cate
+                            
+                        })
+                    }
+
+                    
+                    function addToCart(product_Id){
+                        let user_Id = {{user.user_Id}}
+                        $.post(
+                            "/cartCheckout", 
+                            {user_Id: user_Id, product_Id: product_Id, quantity: 1}
+                        )
+                        .done(function(data){
+                            alert("Đã thêm vào giỏ hàng", data)
                         })
                     }
                 </script>
