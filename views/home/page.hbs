@@ -124,8 +124,7 @@
                             <img src="{{this.image}}" alt="image" />
                         </a>
                         <ul class="featured__item__pic__hover">
-                            <li><a id="addCart-{{this.product_Id}}" value="{{this.product_Id}}" data-toggle="modal"
-                                    data-target="#notification">
+                            <li><a onclick="addToCart({{this.product_Id}})" id="addCart-{{this.product_Id}}" value="{{this.product_Id}}" data-toggle="modal" data-target="#notification">
                                     <i class="fa fa-shopping-cart"></i>
                                 </a>
                             </li>
@@ -168,7 +167,7 @@
                                                 <img src="${v.image}" alt="image" />
                                             </a>
                                             <ul class="featured__item__pic__hover">
-                                                <li><a id="addCart-${v.product_Id}" value="${v.product_Id}" data-toggle="modal"
+                                                <li><a onclick="addToCart(${v.product_Id})" id="addCart-${v.product_Id}" value="${v.product_Id}" data-toggle="modal"
                                                         data-target="#notification">
                                                         <i class="fa fa-shopping-cart"></i>
                                                     </a>
@@ -201,8 +200,15 @@
                     })
                 }
 
-                function setIsActiveForPage(){
-
+                function addToCart(product_Id){
+                    let user_Id = {{user.user_Id}}
+                    $.post(
+                        "/cartCheckout", 
+                        {user_Id: user_Id, product_Id: product_Id, quantity: 1}
+                    )
+                    .done(function(data){
+                        alert("Đã thêm vào giỏ hàng", data)
+                    })
                 }
             </script>
         </div>
